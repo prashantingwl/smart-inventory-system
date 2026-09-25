@@ -20,6 +20,7 @@ This journal serves three purposes:
 |---|---|---|
 | 2026-09-24 | [Day 1: Environment Setup & Infrastructure Bootstrap](./2026-09-24-day-1-environment-setup.md) | `dotnet` `docker` `postgres` `setup` |
 | 2026-09-24 | [Day 1: Swagger OpenAPI 3.0 vs 3.1 Mismatch](./2026-09-24-day-1-swagger-fix.md) | `swagger` `middleware` `aspnet-core` |
+| 2026-09-25 | [Day 2: Multi-Tenancy Foundation](./2026-09-25-day-2-multi-tenancy-foundation.md) | `multi-tenancy` `ef-core` `interceptors` `ddd` |
 
 ## How to Read
 
