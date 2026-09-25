@@ -21,6 +21,7 @@ This journal serves three purposes:
 | 2026-09-24 | [Day 1: Environment Setup & Infrastructure Bootstrap](./2026-09-24-day-1-environment-setup.md) | `dotnet` `docker` `postgres` `setup` |
 | 2026-09-24 | [Day 1: Swagger OpenAPI 3.0 vs 3.1 Mismatch](./2026-09-24-day-1-swagger-fix.md) | `swagger` `middleware` `aspnet-core` |
 | 2026-09-25 | [Day 2: Multi-Tenancy Foundation](./2026-09-25-day-2-multi-tenancy-foundation.md) | `multi-tenancy` `ef-core` `interceptors` `ddd` |
+| 2026-09-25 | [Day 2: Cold-Chain Domain — Category & Warehouse](./2026-09-25-day-2-coldchain-domain.md) | `ddd` `cold-chain` `ef-core` `migration` |
 
 ## How to Read
 
