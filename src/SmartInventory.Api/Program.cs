@@ -1,13 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using SmartInventory.Api.Middleware;
+using SmartInventory.Core.MultiTenancy;
 using SmartInventory.Core.Services;
 using SmartInventory.Infrastructure.Data;
+using SmartInventory.Infrastructure.MultiTenancy;
 using SmartInventory.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// 🆕 Multi-tenancy
+builder.Services.AddScoped<TenantContext>();
+builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -19,8 +26,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddDbContext<SmartInventoryDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres")));
+builder.Services.AddScoped<TenantInterceptor>();
+
+builder.Services.AddDbContext<SmartInventoryDbContext>((sp, options) =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));
+    options.AddInterceptors(sp.GetRequiredService<TenantInterceptor>());
+});
 
 builder.Services.AddScoped<IProductService, ProductService>();
 
@@ -28,36 +40,26 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    // Swagger 3.0 → 3.1 middleware (keep this!)
     app.Use(async (context, next) =>
     {
         var path = context.Request.Path.Value ?? "";
-
         if (path.Contains("swagger.json", StringComparison.OrdinalIgnoreCase))
         {
-            // Capture the original body stream
             var originalBody = context.Response.Body;
-
-            // Buffer the response
             using var memStream = new MemoryStream();
             context.Response.Body = memStream;
 
             await next();
 
-            // Read what Swagger wrote
             memStream.Position = 0;
             var body = await new StreamReader(memStream).ReadToEndAsync();
 
-            Console.WriteLine($"🔧 Original: {body.Substring(0, Math.Min(60, body.Length))}");
-
-            // Patch the openapi version
             var patched = System.Text.RegularExpressions.Regex.Replace(
                 body,
                 @"""openapi""\s*:\s*""3\.\d+\.\d+""",
                 @"""openapi"": ""3.1.0""");
 
-            Console.WriteLine($"🔧 Patched: {patched != body}");
-
-            // Reset EVERYTHING that might have been set
             context.Response.Headers.ContentLength = null;
             context.Response.Headers.Remove("Transfer-Encoding");
 
@@ -80,6 +82,9 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = "swagger";
     });
 }
+
+// 🆕 Tenant resolution middleware
+app.UseMiddleware<TenantResolutionMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
