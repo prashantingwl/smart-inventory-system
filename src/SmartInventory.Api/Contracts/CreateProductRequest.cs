@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace SmartInventory.Api.Contracts;
 
 public record CreateProductRequest(
+    [Required] Guid CategoryId,
     [Required]
     [StringLength(200, MinimumLength = 2, ErrorMessage = "Name must be 2–200 characters.")]
     [RegularExpression(@"^[A-Za-z0-9\s\-\.&']+$",

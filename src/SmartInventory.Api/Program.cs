@@ -35,6 +35,8 @@ builder.Services.AddDbContext<SmartInventoryDbContext>((sp, options) =>
 });
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 
 var app = builder.Build();
 

@@ -2,6 +2,7 @@ namespace SmartInventory.Api.Contracts;
 
 public record ProductResponse(
     Guid Id,
+    Guid CategoryId,
     string Name,
     string Sku,
     string? Description,

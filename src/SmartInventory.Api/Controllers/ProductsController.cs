@@ -25,6 +25,7 @@ public class ProductsController : ControllerBase
     {
         var product = new Product
         {
+            CategoryId = request.CategoryId,        // ← NEW
             Name = request.Name,
             Sku = request.Sku,
             Description = request.Description,
@@ -61,7 +62,14 @@ public class ProductsController : ControllerBase
     }
 
     private static ProductResponse MapToResponse(Product product) =>
-        new(product.Id, product.Name, product.Sku,
-            product.Description, product.Price,
-            product.StockQuantity, product.CreatedAtUtc);
+        new(
+            product.Id,
+            product.CategoryId,
+            product.Name,
+            product.Sku,
+            product.Description,
+            product.Price,
+            product.StockQuantity,
+            product.CreatedAtUtc
+        );
 }
