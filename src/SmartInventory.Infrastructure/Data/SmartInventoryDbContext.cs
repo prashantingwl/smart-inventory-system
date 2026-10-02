@@ -20,6 +20,8 @@ public class SmartInventoryDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Batch> Batches => Set<Batch>();
+    public DbSet<StockLevel> StockLevels => Set<StockLevel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,6 +97,63 @@ public class SmartInventoryDbContext : DbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(p => p.TenantId == _tenantProvider.GetTenantId());
+        });
+                // ─── Batch ───
+        modelBuilder.Entity<Batch>(entity =>
+        {
+            entity.HasKey(b => b.Id);
+            entity.Property(b => b.BatchNumber).IsRequired().HasMaxLength(100);
+
+            // Batch number is unique per (tenant, warehouse, product)
+            entity.HasIndex(b => new { b.TenantId, b.WarehouseId, b.ProductId, b.BatchNumber })
+                  .IsUnique();
+
+            // Index on ExpiryDate for fast FEFO queries
+            entity.HasIndex(b => new { b.TenantId, b.WarehouseId, b.ExpiryDate });
+
+            entity.HasOne(b => b.Tenant)
+                  .WithMany()
+                  .HasForeignKey(b => b.TenantId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(b => b.Product)
+                  .WithMany()
+                  .HasForeignKey(b => b.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(b => b.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(b => b.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(b => b.TenantId == _tenantProvider.GetTenantId());
+        });
+
+        // ─── StockLevel ───
+        modelBuilder.Entity<StockLevel>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+
+            // One stock level per (tenant, product, warehouse)
+            entity.HasIndex(s => new { s.TenantId, s.ProductId, s.WarehouseId })
+                  .IsUnique();
+
+            entity.HasOne(s => s.Tenant)
+                  .WithMany()
+                  .HasForeignKey(s => s.TenantId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(s => s.Product)
+                  .WithMany()
+                  .HasForeignKey(s => s.ProductId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(s => s.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(s => s.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(s => s.TenantId == _tenantProvider.GetTenantId());
         });
     }
 }
